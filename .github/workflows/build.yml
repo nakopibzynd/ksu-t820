@@ -10,7 +10,7 @@ jobs:
       - name: Install dependencies and Clang
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison build-essential ccache clang lld llvm curl flex git libssl-dev libelf-dev python3 unzip zstd lz4
+          sudo apt-get install -y bc bison build-essential ccache clang lld llvm curl flex git libssl-dev libelf-dev python3 unzip zstd lz4 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
       - name: Fetch AOSP 5.4.254 kernel source
         run: |
@@ -32,8 +32,12 @@ jobs:
         run: |
           set -o pipefail
           cd kernel
-          make O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 gki_defconfig
-          make -j1 O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 Image Image.lz4 Image.gz 2>&1 | tee ../build.log
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+          export CLANG_TRIPLE=aarch64-linux-gnu-
+          make O=out CC=clang LLVM=1 LLVM_IAS=1 gki_defconfig
+          make -j$(nproc) O=out CC=clang LLVM=1 LLVM_IAS=1 Image Image.lz4 Image.gz 2>&1 | tee ../build.log
 
       - name: Show errors
         if: failure()
