@@ -1,1 +1,52 @@
+name: Build KernelSU-Next 5.4.254
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential ccache curl flex git libssl-dev libelf-dev python3 unzip zstd lz4
+
+      - name: Download Google Clang toolchain
+        run: |
+          mkdir -p clang
+          curl -LSs "https://googlesource.com" -o clang.tar.gz
+          tar -xzf clang.tar.gz -C clang
+          rm clang.tar.gz
+
+      - name: Fetch AOSP 5.4.254 kernel source
+        run: |
+          git init kernel
+          cd kernel
+          git remote add origin https://googlesource.com
+          git fetch --depth 1 origin 25d683f9b7fe7a02a4c2b50e550b5e372959639d
+          git checkout FETCH_HEAD
+          echo "-android12-9-g4deef2b7cf69" > .scmversion
+
+      - name: Integrate KernelSU-Next
+        run: |
+          cd kernel
+          curl -LSs "https://githubusercontent.com" | bash -s legacy
+          echo "CONFIG_KSU=y" >> arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KPROBES=y" >> arch/arm64/configs/gki_defconfig
+
+      - name: Build kernel
+        run: |
+          cd kernel
+          export PATH="$GITHUB_WORKSPACE/clang/bin:$PATH"
+          make O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 gki_defconfig
+          make -j$(nproc) O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 Image Image.lz4 Image.gz
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KernelSU-5.4.254-Unisoc
+          path: |
+            kernel/out/arch/arm64/boot/Image
+            kernel/out/arch/arm64/boot/Image.lz4
+            kernel/out/arch/arm64/boot/Image.gz
