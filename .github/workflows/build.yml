@@ -16,7 +16,7 @@ jobs:
         run: |
           git init kernel
           cd kernel
-          git remote add origin https://github.com
+          git remote add origin https://android.googlesource.com/kernel/common
           git fetch --depth 1 origin 25d683f9b7fe7a02a4c2b50e550b5e372959639d
           git checkout FETCH_HEAD
           echo "-android12-9-g4deef2b7cf69" > .scmversion
@@ -24,7 +24,7 @@ jobs:
       - name: Integrate KernelSU-Next
         run: |
           cd kernel
-          curl -LSs "https://githubusercontent.com" | bash -s legacy
+          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
           echo "CONFIG_KSU=y" >> arch/arm64/configs/gki_defconfig
           echo "CONFIG_KPROBES=y" >> arch/arm64/configs/gki_defconfig
 
