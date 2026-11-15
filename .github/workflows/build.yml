@@ -16,7 +16,7 @@ jobs:
         run: |
           git init kernel
           cd kernel
-          git remote add origin https://googlesource.com
+          git remote add origin https://github.com
           git fetch --depth 1 origin 25d683f9b7fe7a02a4c2b50e550b5e372959639d
           git checkout FETCH_HEAD
           echo "-android12-9-g4deef2b7cf69" > .scmversion
