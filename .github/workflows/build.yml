@@ -30,9 +30,23 @@ jobs:
 
       - name: Build kernel
         run: |
+          set -o pipefail
           cd kernel
           make O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 gki_defconfig
-          make -j$(nproc) O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 Image Image.lz4 Image.gz
+          make -j1 O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 Image Image.lz4 Image.gz 2>&1 | tee ../build.log
+
+      - name: Show errors
+        if: failure()
+        run: |
+          echo "===== FIRST 80 ERROR LINES ====="
+          grep -n -i -B3 -A3 -E "error|fatal|undefined|No rule" build.log | head -80
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
