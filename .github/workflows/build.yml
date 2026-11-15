@@ -7,17 +7,10 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Install dependencies
+      - name: Install dependencies and Clang
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison build-essential ccache curl flex git libssl-dev libelf-dev python3 unzip zstd lz4
-
-      - name: Download Clang toolchain
-        run: |
-          mkdir -p clang
-          curl -LSs "https://github.com" -o clang.tar.gz
-          tar -xzf clang.tar.gz -C clang
-          rm clang.tar.gz
+          sudo apt-get install -y bc bison build-essential ccache clang lld llvm curl flex git libssl-dev libelf-dev python3 unzip zstd lz4
 
       - name: Fetch AOSP 5.4.254 kernel source
         run: |
@@ -38,7 +31,6 @@ jobs:
       - name: Build kernel
         run: |
           cd kernel
-          export PATH="$GITHUB_WORKSPACE/clang/bin:$PATH"
           make O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 gki_defconfig
           make -j$(nproc) O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 Image Image.lz4 Image.gz
 
