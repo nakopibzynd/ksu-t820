@@ -12,10 +12,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y bc bison build-essential ccache curl flex git libssl-dev libelf-dev python3 unzip zstd lz4
 
-      - name: Download Google Clang toolchain
+      - name: Download Clang toolchain
         run: |
           mkdir -p clang
-          curl -LSs "https://googlesource.com" -o clang.tar.gz
+          curl -LSs "https://github.com" -o clang.tar.gz
           tar -xzf clang.tar.gz -C clang
           rm clang.tar.gz
 
